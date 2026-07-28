@@ -13,6 +13,37 @@ All entries dated 2026-07-27, except the viewer port (2026-07-28).
 
 ---
 
+## Four defects found by running the project end to end (2026-07-28)
+
+Ran the whole thing from `make clean`: verify, tests, scan, analyse, landscape,
+viewer, anticommute demo. The physics all reproduced — 43 points, max VQE error
+0.001257 mHa, R_e 0.7367 Å, θ* drifting 1.257 rad — and both committed figures
+regenerated bit-identically. Four things around the edges did not hold up.
+
+**A test that guards the headline claim had never run in CI.**
+`test_landscape_valley_floor_moves_with_geometry` skips itself when
+`data/landscape.npz` is missing. `data/` is gitignored, CI checks out fresh, and
+the workflow never ran `landscape.py` — so on every CI run it skipped, reporting
+`34 passed, 1 skipped`, which reads as green. Its own docstring says the whole
+Phase 6 result rests on the drift it checks. CI now builds the grid first, and
+treats *any* skip as a failure: a test that stops guarding something should not
+be able to do it quietly.
+
+**`make setup && make test` could not work on a clean machine.** `pytest` was
+never in `requirements.txt`, and nothing there pulls it in transitively. CI
+passed only because it installs `pytest` explicitly on its own line. Anyone
+following HOW_TO_RUN hit `ModuleNotFoundError`. Added to `requirements.txt`.
+
+**The launcher still claimed 44 bond lengths.** The grid-size correction below
+reached the README, `ABOUT.txt` and `HOW_TO_RUN.txt`, but missed
+`Run_VQE_Scan.command`. It is 43.
+
+**Two documents still claimed 31 tests.** The suite has been 35 since the
+Phase 6 work; the entry below already said so. `ABOUT.txt` and `HOW_TO_RUN.txt`
+did not.
+
+---
+
 ## The interactive viewer moved to Python (2026-07-28)
 
 The landscape viewer was a self-contained WebGL page: a template, an inlined

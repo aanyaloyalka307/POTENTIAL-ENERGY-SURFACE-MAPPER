@@ -30,5 +30,20 @@ jobs:
       - name: Verify environment reproduces reference energies
         run: python verify_env.py
 
+      # data/ is gitignored, so on a fresh checkout landscape.npz does not
+      # exist and test_landscape_valley_floor_moves_with_geometry skips itself.
+      # That test guards the premise of continuation, so build the grid first
+      # and let it run for real.
+      - name: Build the landscape grid the valley-floor test needs
+        run: python landscape.py
+
+      # A skip is treated as a failure: it means a test silently stopped
+      # guarding what it claims to, while the run still reports green.
       - name: Run test suite
-        run: python -m pytest tests/ -q --durations=10
+        run: |
+          set -o pipefail
+          python -m pytest tests/ -q --durations=10 -rs 2>&1 | tee /tmp/pytest.out
+          if grep -q "skipped" /tmp/pytest.out; then
+            echo "::error::a test skipped - it is not guarding anything"
+            exit 1
+          fi

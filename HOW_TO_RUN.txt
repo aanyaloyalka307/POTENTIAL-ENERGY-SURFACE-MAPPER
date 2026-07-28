@@ -57,7 +57,7 @@ IF YOU HAVE 'make'
 
     make setup      install everything
     make verify     check the setup
-    make test       run the 31 automated checks
+    make test       run the 35 automated checks
     make scan       the bond-length scan
     make analyse    extract physics, draw the figure
     make all        all of the above in order

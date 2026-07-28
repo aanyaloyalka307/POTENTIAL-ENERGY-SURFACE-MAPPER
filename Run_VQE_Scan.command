@@ -70,7 +70,7 @@ echo ""
 
 # --- 4. the scan ---------------------------------------------------------
 echo "------------------------------------------------------------"
-echo " Step 2 of 3 - scanning 44 bond lengths (about 2 minutes)"
+echo " Step 2 of 3 - scanning 43 bond lengths (about 2 minutes)"
 echo "------------------------------------------------------------"
 echo "No output appears until it finishes. This is normal."
 "$VENV_PY" scan.py || {

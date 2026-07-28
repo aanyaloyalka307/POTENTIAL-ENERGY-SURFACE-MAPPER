@@ -123,7 +123,7 @@ WHAT'S IN THIS FOLDER
                        zoom and play with
 
   docs/                Seven PDF guides, one per phase of the build
-  tests/               31 automated checks on the physics
+  tests/               35 automated checks on the physics
   results/figures/     The output plots
 
 
