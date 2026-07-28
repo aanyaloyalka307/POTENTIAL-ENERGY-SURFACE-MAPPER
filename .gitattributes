@@ -1,0 +1,10 @@
+# GitHub language statistics (github-linguist)
+# -------------------------------------------------------------------
+# results/interactive/ is the original self-contained WebGL prototype,
+# now superseded by the React app in web/. It is kept in the repo for
+# reference, but its generated HTML and vendored three.js should not
+# dominate the language bar (they were making the repo read as ~86% HTML).
+results/interactive/** linguist-generated=true
+
+# npm lockfile is machine-generated, not hand-written source.
+web/package-lock.json linguist-generated=true
