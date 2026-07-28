@@ -1,0 +1,8 @@
+# Language statistics (GitHub Linguist)
+#
+# The interactive landscape viewer is build output, not source: build.py inlines
+# the template and three.js into a single standalone file. Counting it made the
+# repository read as 93% HTML.
+
+results/interactive/landscape_3d.html linguist-generated=true
+results/interactive/three.min.js      linguist-vendored=true
