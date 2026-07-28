@@ -1,0 +1,140 @@
+====================================================================
+ H2 POTENTIAL ENERGY SURFACE WITH VQE
+ What this project is and what it does
+====================================================================
+
+
+IN ONE SENTENCE
+---------------
+
+This project uses a quantum algorithm (VQE) to trace out the energy of
+a hydrogen molecule as you pull its two atoms apart, and checks that
+curve against an exact classical calculation at every single step.
+
+
+WHAT IS A POTENTIAL ENERGY SURFACE?
+-----------------------------------
+
+Take a hydrogen molecule, H2. It has two atoms held together by a
+chemical bond. Now imagine slowly pulling them apart, and at every
+distance asking: how much energy does the molecule have right here?
+
+Plot energy against distance and you get a curve. That curve is the
+"potential energy surface", and it contains most of what chemistry
+cares about:
+
+  - Where the curve bottoms out is the molecule's natural bond
+    length - how far apart the atoms actually sit.
+
+  - How deep the valley is tells you how much energy it takes to rip
+    the molecule apart.
+
+  - How steep the valley walls are tells you how fast the bond
+    vibrates - a number you can measure in a real laboratory with
+    infrared light.
+
+This project computes that curve at 43 different bond lengths.
+
+
+WHAT IS VQE?
+------------
+
+VQE stands for Variational Quantum Eigensolver. Its job is to find the
+lowest possible energy of a molecule.
+
+How it works, in plain English:
+
+  1. A quantum circuit prepares a guess for the molecule's state.
+  2. The energy of that guess is measured.
+  3. An ordinary computer adjusts the circuit's dials to lower it.
+  4. Repeat until the energy stops dropping.
+
+It is a back-and-forth between a quantum computer, which explores
+states, and a classical computer, which decides what to try next.
+
+
+THE HONEST VERSION
+------------------
+
+For hydrogen in a small basis set, VQE reproduces the exact answer -
+and so does a classical method, in milliseconds, on the same laptop.
+
+So this project does NOT demonstrate that quantum computers are
+faster. It demonstrates something more modest and more useful: a
+correctly built quantum chemistry pipeline, verified against an
+independent exact calculation at every geometry.
+
+The agreement is 0.0013 millihartree, which is roughly a thousand
+times tighter than the threshold chemists call "chemical accuracy".
+
+Saying this plainly is deliberate. A project that overclaims is
+weaker than one that states exactly what it did.
+
+
+WHAT MAKES THIS DIFFERENT FROM A TUTORIAL
+-----------------------------------------
+
+Most VQE demonstrations hand you the molecule's Hamiltonian as a list
+of numbers typed into the source code. That works for exactly one
+molecule at exactly one geometry, and it hides four separate choices
+somebody else made on your behalf.
+
+This project builds that stage itself, from the atomic positions up.
+That is what makes scanning the bond length possible at all, and it
+is the part that transfers to any other molecule.
+
+
+WHAT IT FOUND
+-------------
+
+Beyond reproducing the textbook curve, the project ran an experiment
+comparing two different quantum circuit designs across the whole
+dissociation curve.
+
+A generic "hardware-efficient" circuit works fine near the normal
+bond length but fails badly once the bond is stretched - by up to 24
+millihartree, which is fifteen times worse than chemical accuracy.
+
+The interesting part is why. Thirty random attempts never fixed it,
+which looks like proof that the circuit is simply not capable enough.
+It is not. The same circuit, when walked gradually out from the
+normal bond length instead of started randomly, gets the exact
+answer. The circuit was always good enough; the optimiser just could
+not find its way there from a random starting point.
+
+
+WHAT'S IN THIS FOLDER
+---------------------
+
+  README.md            The full technical write-up with figures
+  HOW_TO_RUN.txt       Step-by-step running instructions
+  Run_VQE_Scan.command Double-click this to run everything
+
+  verify_env.py        Checks your setup produces known-correct numbers
+  classical.py         The exact classical reference calculation
+  hamiltonian.py       Turns atomic positions into a quantum Hamiltonian
+  vqe_single.py        Runs VQE at one bond length
+  scan.py              Repeats it across 43 bond lengths
+  analyse.py           Extracts the physics and draws the figure
+  compare_ansatz.py    The circuit-comparison experiment
+  landscape.py         The 3D energy surface behind that experiment
+
+  results/interactive/landscape_3d.html
+                       Open in a browser: the same surface in 3D,
+                       which you can spin, zoom and play with
+
+  docs/                Seven PDF guides, one per phase of the build
+  tests/               31 automated checks on the physics
+  results/figures/     The output plots
+
+
+BUILT WITH
+----------
+
+  PennyLane    quantum circuits and the chemistry module
+  PySCF        molecular integrals and the exact classical reference
+  NumPy/SciPy  the numerical work
+  Matplotlib   the figures
+
+
+New here? Open HOW_TO_RUN.txt next.

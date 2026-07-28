@@ -1,0 +1,174 @@
+====================================================================
+ HOW TO RUN THIS PROJECT
+ Step-by-step, assuming nothing
+====================================================================
+
+
+THE EASIEST WAY
+---------------
+
+Double-click  Run_VQE_Scan.command
+
+That is it. The first run takes a few minutes because it downloads
+the scientific libraries it needs. After that it takes about three
+minutes.
+
+It will:
+
+  1. Check you have Python 3.
+  2. Set up a private folder for the libraries (.venv) so nothing
+     on the rest of your computer is touched.
+  3. Verify the setup by computing three energies whose correct
+     values are already known.
+  4. Run the bond-length scan across 43 geometries.
+  5. Extract the physics and draw the figure.
+  6. Open the figure for you.
+
+If macOS refuses to open the file, see TROUBLE below.
+
+
+THE MANUAL WAY
+--------------
+
+Open Terminal, then:
+
+    cd path/to/POTENTIAL-ENERGY-SURFACE-MAPPER
+    python3 -m venv .venv
+    source .venv/bin/activate
+    pip install -r requirements.txt
+
+Then run the pieces in order:
+
+    python verify_env.py     about 2 seconds
+    python classical.py      about 1 second
+    python hamiltonian.py    about 5 seconds
+    python vqe_single.py     about 10 seconds
+    python scan.py           about 2 minutes
+    python analyse.py        about 2 seconds
+
+On Windows the second and third lines are instead:
+
+    python -m venv .venv
+    .venv\Scripts\activate
+
+
+IF YOU HAVE 'make'
+------------------
+
+    make setup      install everything
+    make verify     check the setup
+    make test       run the 31 automated checks
+    make scan       the bond-length scan
+    make analyse    extract physics, draw the figure
+    make all        all of the above in order
+
+
+WHAT YOU SHOULD SEE
+-------------------
+
+verify_env.py must print these three numbers:
+
+    nuclear repulsion      0.719969 Ha
+    Hartree-Fock          -1.116999 Ha
+    FCI                   -1.137306 Ha
+
+Library version numbers will drift over time. These energies must
+not. They are properties of the physics, not of the software. If
+yours differ, something is wrong with your setup, and nothing later
+in the project will be trustworthy.
+
+analyse.py finishes by printing:
+
+    equilibrium bond length       0.7367 A
+    well depth D_e                5.5562 eV
+    harmonic frequency            5184.1 cm-1
+    max |VQE - FCI|             0.001257 mHa
+
+and writes the figure to:
+
+    results/figures/dissociation_curve.png
+
+
+THE ONE OPTIONAL SLOW PART
+--------------------------
+
+    python compare_ansatz.py     about 15 minutes
+    python landscape.py          about 25 seconds
+
+This is the circuit-comparison experiment described in ABOUT.txt. It
+is not needed for the main result, and its findings are already
+written up in README.md and docs/Phase6_Ansatz_Comparison.pdf.
+
+
+HOW LONG EVERYTHING TAKES
+-------------------------
+
+    first-time library install     3 to 5 minutes
+    verify + scan + analyse        about 3 minutes
+    the test suite                 about 1 minute
+    compare_ansatz.py              about 15 minutes
+
+Nothing here needs a quantum computer, an account, an API key, or an
+internet connection after the libraries are installed. Everything
+runs as a simulation on your own machine.
+
+
+TROUBLE
+-------
+
+"Python 3 was not found"
+    Install it from https://www.python.org/downloads/ and try again.
+
+macOS says the file "cannot be opened because it is from an
+unidentified developer"
+    Right-click Run_VQE_Scan.command and choose Open, then confirm.
+    You only have to do this once.
+
+Double-clicking does nothing
+    The file may have lost permission to run. In Terminal:
+        chmod +x Run_VQE_Scan.command
+
+"pyscf" fails to install
+    PySCF compiles some code during installation and needs a C
+    compiler. On macOS run:
+        xcode-select --install
+    On Ubuntu or Debian:
+        sudo apt install build-essential
+
+The energies do not match the values above
+    Check that you are using the virtual environment (.venv) and not
+    a different Python. Run:
+        which python
+    It should point inside the project's .venv folder.
+
+The scan seems to hang
+    It is not hung, it is working. 43 geometries at roughly three
+    seconds each is about two minutes with no output until it
+    finishes. Run it directly rather than through a pipe if you want
+    to watch the progress lines appear.
+
+
+THE INTERACTIVE 3D VERSION
+--------------------------
+
+Open this file in any browser - just double-click it:
+
+    results/interactive/landscape_3d.html
+
+Drag to spin the surface, scroll to zoom. Press Continuation to watch the
+optimiser walk the valley from a short bond out to full dissociation, or
+Random start to see where a blind guess lands instead.
+
+Nothing is downloaded and no server is needed; everything it uses is
+already inside the file.
+
+
+WHERE TO READ MORE
+------------------
+
+    ABOUT.txt    what the project is, in plain English
+    README.md    the technical write-up with results and figures
+    docs/        seven PDF guides covering the theory and the build
+
+The PDFs are the long version. Phase 0 is the place to start if you
+want to understand the physics rather than just run the code.
