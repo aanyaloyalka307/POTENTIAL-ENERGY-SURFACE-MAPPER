@@ -119,9 +119,8 @@ WHAT'S IN THIS FOLDER
   compare_ansatz.py    The circuit-comparison experiment
   landscape.py         The 3D energy surface behind that experiment
 
-  results/interactive/landscape_3d.html
-                       Open in a browser: the same surface in 3D,
-                       which you can spin, zoom and play with
+  viewer.py            The same surface in a window you can spin,
+                       zoom and play with
 
   docs/                Seven PDF guides, one per phase of the build
   tests/               31 automated checks on the physics

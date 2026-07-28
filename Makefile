@@ -1,4 +1,4 @@
-.PHONY: help setup verify test scan analyse compare landscape all clean
+.PHONY: help setup verify test scan analyse compare landscape viewer all clean
 
 PY ?= .venv/bin/python
 PIP ?= .venv/bin/pip
@@ -11,6 +11,7 @@ help:
 	@echo "make analyse  Phase 5 - extract observables and plot"
 	@echo "make compare  Phase 6 - ansatz comparison (~15 min)"
 	@echo "make landscape  the 3D E(R,theta) surface (~25 s)"
+	@echo "make viewer   open that surface interactively"
 	@echo "make all      verify, test, scan, analyse"
 
 setup:
@@ -36,6 +37,9 @@ compare:
 
 landscape:
 	$(PY) landscape.py
+
+viewer:
+	$(PY) viewer.py
 
 all: verify test scan analyse
 

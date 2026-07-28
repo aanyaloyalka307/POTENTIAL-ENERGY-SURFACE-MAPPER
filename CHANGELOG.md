@@ -9,7 +9,30 @@ the tolerance reasoning is a comment in `scan.py`, the fit-window trap is a
 docstring in `analyse.py`, and the honest warm-start measurement is in
 `docs/Phase4_The_Geometry_Scan.pdf`. What follows is the order it happened in.
 
-All entries dated 2026-07-27.
+All entries dated 2026-07-27, except the viewer port (2026-07-28).
+
+---
+
+## The interactive viewer moved to Python (2026-07-28)
+
+The landscape viewer was a self-contained WebGL page: a template, an inlined
+copy of three.js, and a 678 KB generated `landscape_3d.html`. It worked, but it
+meant the repository was 93% HTML by Linguist's count, and it carried a vendored
+graphics library to draw one surface.
+
+`viewer.py` replaces all of it with matplotlib, which was already a dependency.
+Same four controls — Continuation, Random start, Wireframe, Reset view — same
+slider, same readout, and the same log-compressed z-axis above the 0.40 Ha knee,
+so the repulsive wall still reads as a wall instead of a flat tabletop.
+
+Two things changed in the port. The viewer now opens a window rather than a
+browser tab, so it needs the project's `.venv` where the old page needed nothing
+but a double-click. And it reads `data/landscape.npz` directly, which removed
+the `export.py` → `landscape.json` → `build.py` chain entirely.
+
+One defect was caught during the port: the slider handle only followed the
+walker during playback, so moving the walker any other way left the handle
+stranded at its old index. It now syncs wherever the walker is driven from.
 
 ---
 

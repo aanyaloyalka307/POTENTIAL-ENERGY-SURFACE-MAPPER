@@ -151,16 +151,19 @@ The scan seems to hang
 THE INTERACTIVE 3D VERSION
 --------------------------
 
-Open this file in any browser - just double-click it:
+Run this to open the surface in a window:
 
-    results/interactive/landscape_3d.html
+    python landscape.py     (first time only - builds the grid, ~25 s)
+    python viewer.py
 
 Drag to spin the surface, scroll to zoom. Press Continuation to watch the
 optimiser walk the valley from a short bond out to full dissociation, or
-Random start to see where a blind guess lands instead.
+Random start to see where a blind guess lands instead. The panel on the
+right reports how far the current point sits from the exact answer, in
+millihartree.
 
-Nothing is downloaded and no server is needed; everything it uses is
-already inside the file.
+Use the same .venv you set up for everything else - the viewer needs only
+numpy and matplotlib, both already installed.
 
 
 WHERE TO READ MORE

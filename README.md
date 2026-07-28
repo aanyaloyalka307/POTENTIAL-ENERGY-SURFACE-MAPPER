@@ -108,16 +108,14 @@ somewhere along the vertical line, with no reason to land near θ* = 1.36.
 
 Run it with `python landscape.py` (~25 s).
 
-**Interactive version.** [`results/interactive/landscape_3d.html`](results/interactive/landscape_3d.html)
-renders the same surface in WebGL — orbit it, walk the continuation path, and
-fire random starts to watch them miss. Self-contained: three.js and the grid
-are inlined, so it needs no server and makes no external requests. Rebuild it
-after a fresh scan with:
+**Interactive version.** [`viewer.py`](viewer.py) opens the same surface in a
+window — orbit it, walk the continuation path, and fire random starts to watch
+them miss. The readout reports the live gap to the FCI reference at every step,
+so a random start's failure is a number rather than an assertion.
 
 ```bash
-python landscape.py
-python results/interactive/export.py
-python results/interactive/build.py
+python landscape.py     # writes data/landscape.npz (~25 s)
+python viewer.py
 ```
 
 ---
