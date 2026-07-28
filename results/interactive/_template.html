@@ -1,0 +1,457 @@
+<meta charset="utf-8">
+<title>H₂ Optimisation Landscape — E(R, θ)</title>
+
+<style>
+  :root{
+    --ink:#0b0f16; --panel:#121a24; --panel-2:#0e151d;
+    --rule:#22303f; --rule-soft:#1a2531;
+    --text:#d9e2ea; --muted:#7f8fa0; --dim:#5b6a7a;
+    --amber:#e8a33d; --amber-dim:#8a6224;
+    --crimson:#e8574a; --teal:#39c0a8;
+    --shadow:rgba(0,0,0,.55);
+  }
+  @media (prefers-color-scheme: light){
+    :root{
+      --ink:#eef1f4; --panel:#ffffff; --panel-2:#f5f7f9;
+      --rule:#ccd6e0; --rule-soft:#e2e8ee;
+      --text:#16202b; --muted:#5d6d7e; --dim:#8697a8;
+      --amber:#b3761b; --amber-dim:#e0bd85;
+      --crimson:#c0392b; --teal:#12806c;
+      --shadow:rgba(20,40,60,.14);
+    }
+  }
+  :root[data-theme="dark"]{
+    --ink:#0b0f16; --panel:#121a24; --panel-2:#0e151d;
+    --rule:#22303f; --rule-soft:#1a2531;
+    --text:#d9e2ea; --muted:#7f8fa0; --dim:#5b6a7a;
+    --amber:#e8a33d; --amber-dim:#8a6224;
+    --crimson:#e8574a; --teal:#39c0a8; --shadow:rgba(0,0,0,.55);
+  }
+  :root[data-theme="light"]{
+    --ink:#eef1f4; --panel:#ffffff; --panel-2:#f5f7f9;
+    --rule:#ccd6e0; --rule-soft:#e2e8ee;
+    --text:#16202b; --muted:#5d6d7e; --dim:#8697a8;
+    --amber:#b3761b; --amber-dim:#e0bd85;
+    --crimson:#c0392b; --teal:#12806c; --shadow:rgba(20,40,60,.14);
+  }
+
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; background:var(--ink); color:var(--text);
+    font-family:ui-sans-serif,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased; overflow:hidden;
+  }
+  .mono{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace}
+
+  #stage{position:fixed; inset:0}
+  #gl{display:block; width:100%; height:100%}
+
+  /* ---------- instrument panel ---------- */
+  #panel{
+    position:fixed; top:18px; left:18px; width:310px; max-height:calc(100% - 36px);
+    background:color-mix(in srgb, var(--panel) 92%, transparent);
+    border:1px solid var(--rule); border-radius:3px;
+    backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+    box-shadow:0 10px 34px var(--shadow);
+    display:flex; flex-direction:column; overflow:hidden; z-index:5;
+  }
+  #panel header{padding:15px 16px 13px; border-bottom:1px solid var(--rule); position:relative}
+  #fold{
+    position:absolute; top:11px; right:11px; width:24px; height:24px; flex:none;
+    padding:0; font-size:15px; line-height:1; color:var(--muted);
+    background:transparent; border:1px solid var(--rule); border-radius:2px;
+  }
+  #fold:hover{color:var(--amber); border-color:var(--amber); background:transparent}
+  #panel.folded .body{display:none}
+  #panel.folded .sub{display:none}
+  .eyebrow{
+    font-size:9.5px; letter-spacing:.19em; text-transform:uppercase;
+    color:var(--muted); margin:0 0 7px;
+  }
+  h1{
+    margin:0; font-size:17px; line-height:1.22; font-weight:640;
+    letter-spacing:-.012em; text-wrap:balance;
+  }
+  h1 em{font-style:normal; color:var(--amber)}
+  .sub{margin:8px 0 0; font-size:11.5px; line-height:1.5; color:var(--muted)}
+
+  .body{overflow-y:auto; padding:2px 0 4px}
+  section{padding:13px 16px; border-bottom:1px solid var(--rule-soft)}
+  section:last-child{border-bottom:0}
+  .lbl{
+    font-size:9.5px; letter-spacing:.16em; text-transform:uppercase;
+    color:var(--dim); margin:0 0 9px;
+  }
+
+  /* readout */
+  .read{display:grid; grid-template-columns:auto 1fr; gap:5px 12px; align-items:baseline}
+  .read dt{font-size:11px; color:var(--muted)}
+  .read dd{
+    margin:0; font-size:13.5px; font-variant-numeric:tabular-nums;
+    text-align:right; letter-spacing:-.01em;
+  }
+  .read dd.hi{color:var(--amber)}
+
+  /* controls */
+  .row{display:flex; gap:8px; margin-top:9px}
+  button{
+    flex:1; font:inherit; font-size:11.5px; font-weight:560; letter-spacing:.01em;
+    padding:8px 10px; cursor:pointer; color:var(--text);
+    background:var(--panel-2); border:1px solid var(--rule); border-radius:2px;
+    transition:border-color .14s, color .14s, background .14s;
+  }
+  button:hover{border-color:var(--amber); color:var(--amber)}
+  button:focus-visible{outline:2px solid var(--amber); outline-offset:2px}
+  button.on{border-color:var(--amber); color:var(--ink); background:var(--amber)}
+  button.danger:hover{border-color:var(--crimson); color:var(--crimson)}
+
+  .slider{width:100%; margin:4px 0 0; accent-color:var(--amber)}
+  .scale{
+    display:flex; justify-content:space-between; font-size:9.5px;
+    color:var(--dim); margin-top:3px; font-variant-numeric:tabular-nums;
+  }
+
+  /* legend */
+  .key{display:flex; flex-direction:column; gap:7px}
+  .key div{display:flex; align-items:center; gap:9px; font-size:11px; color:var(--muted)}
+  .sw{width:19px; height:3px; border-radius:2px; flex:none}
+  .ramp{
+    height:9px; border-radius:2px; margin:2px 0 5px;
+    background:linear-gradient(90deg,#440154,#414487,#2a788e,#22a884,#7ad151,#fde725);
+  }
+
+  .note{font-size:10.5px; line-height:1.55; color:var(--dim); margin:9px 0 0}
+  .note b{color:var(--muted); font-weight:600}
+
+  /* ---------- status bar ---------- */
+  #status{
+    position:fixed; left:18px; right:18px; bottom:14px; z-index:5;
+    display:flex; justify-content:space-between; align-items:center; gap:16px;
+    font-size:10.5px; color:var(--dim); pointer-events:none;
+  }
+  #status .l{display:flex; gap:16px; flex-wrap:wrap}
+  #verdict{color:var(--muted); transition:color .2s}
+  #verdict.good{color:var(--teal)} #verdict.bad{color:var(--crimson)}
+
+  @media (max-width:760px){
+    #panel{width:auto; left:10px; right:10px; top:10px; max-height:42%}
+    #status{left:10px; right:10px; font-size:9.5px}
+    #status .l{gap:10px}
+  }
+  @media (prefers-reduced-motion:reduce){ *{transition:none !important} }
+</style>
+
+<div id="stage"><canvas id="gl"></canvas></div>
+
+<div id="panel">
+  <header>
+    <button id="fold" aria-label="Collapse panel" title="Collapse panel">–</button>
+    <p class="eyebrow">H₂ · STO-3G · UCCSD</p>
+    <h1>The surface VQE is <em>actually</em> searching</h1>
+    <p class="sub">Energy as a function of bond length <span class="mono">R</span> and
+      the circuit's one meaningful parameter <span class="mono">θ</span>. Drag to orbit,
+      scroll to zoom.</p>
+  </header>
+
+  <div class="body">
+    <section>
+      <p class="lbl">Readout</p>
+      <dl class="read">
+        <dt>Bond length R</dt><dd class="mono" id="rOut">—</dd>
+        <dt>Parameter θ</dt><dd class="mono" id="tOut">—</dd>
+        <dt>Energy</dt><dd class="mono hi" id="eOut">—</dd>
+        <dt>vs FCI</dt><dd class="mono" id="dOut">—</dd>
+      </dl>
+    </section>
+
+    <section>
+      <p class="lbl">Walk the dissociation</p>
+      <input class="slider" id="slide" type="range" min="0" max="44" value="0" step="1"
+             aria-label="bond length index">
+      <div class="scale mono"><span>0.30 Å</span><span>2.50 Å</span></div>
+      <div class="row">
+        <button id="play">▶ Continuation</button>
+        <button id="rand" class="danger">Random start</button>
+      </div>
+      <p class="note">Continuation follows the valley from the easy geometry outward.
+        A random start guesses <b>θ</b> blind at 2.50 Å.</p>
+    </section>
+
+    <section>
+      <p class="lbl">Legend</p>
+      <div class="ramp" role="img" aria-label="viridis colour ramp, low to high energy"></div>
+      <div class="key">
+        <div><span class="sw" style="background:var(--amber)"></span>valley floor θ*(R)</div>
+        <div><span class="sw" style="background:var(--crimson)"></span>random start at 2.50 Å</div>
+        <div><span class="sw" style="background:var(--dim)"></span>energy, −1.14 → +0.40 Ha</div>
+      </div>
+    </section>
+
+    <section>
+      <p class="lbl">View</p>
+      <div class="row">
+        <button id="wire">Wireframe</button>
+        <button id="reset">Reset view</button>
+      </div>
+    </section>
+  </div>
+</div>
+
+<div id="status">
+  <div class="l mono">
+    <span>45 × 121 grid</span>
+    <span>θ* drifts 0.105 → 1.361 rad</span>
+    <span>PennyLane + PySCF</span>
+  </div>
+  <div id="verdict" class="mono">ready</div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  const D = window.__LANDSCAPE__;
+  const R = D.R, TH = D.TH, Z = D.Z, TSTAR = D.theta_star, ESTAR = D.e_star;
+  const NR = R.length, NT = TH.length;
+  const ZTOP = 0.40, ZMIN = -1.14;
+
+  // ---- viridis LUT (the standard perceptually-uniform map in this field) --
+  const VIR = [[68,1,84],[71,24,106],[72,40,120],[69,55,129],[64,70,136],[58,83,139],
+    [51,97,141],[45,109,142],[40,121,142],[35,133,142],[31,145,140],[30,156,137],
+    [35,168,132],[48,180,122],[70,192,111],[97,201,96],[128,209,79],[161,216,58],
+    [195,221,38],[227,225,26],[253,231,37]];
+  function viridis(t){
+    t = Math.max(0, Math.min(1, t)) * (VIR.length - 1);
+    const i = Math.floor(t), f = t - i, a = VIR[i], b = VIR[Math.min(i+1, VIR.length-1)];
+    return [(a[0]+(b[0]-a[0])*f)/255,(a[1]+(b[1]-a[1])*f)/255,(a[2]+(b[2]-a[2])*f)/255];
+  }
+
+  // ---- axis mapping ------------------------------------------------------
+  const SX = 3.4, SZ = 2.3, SY = 1.5;
+  const xOf = j => (j/(NR-1) - 0.5) * SX;
+  const zOf = i => (i/(NT-1) - 0.5) * SZ;
+  // Soft-compress above ZTOP: a hard clip renders as a fake flat tabletop.
+  // This asymptotes smoothly so the wall curves over instead.
+  // Logarithmic above ZTOP. An exponential soft-clip asymptotes so hard it
+  // renders as a flat tabletop; a log keeps rising, so the wall still reads
+  // as a wall without swamping the valley.
+  const KNEE = 0.30, ZMAX = 2.65;
+  function squash(e){
+    return e <= ZTOP ? e : ZTOP + KNEE * Math.log1p((e - ZTOP) / KNEE);
+  }
+  const YTOP = squash(ZMAX);
+  const yOf = e => ((squash(e) - ZMIN)/(YTOP - ZMIN) - 0.32) * SY;
+
+  // ---- scene -------------------------------------------------------------
+  const canvas = document.getElementById("gl");
+  const renderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:true});
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 100);
+
+  scene.add(new THREE.AmbientLight(0xffffff, 0.62));
+  const key = new THREE.DirectionalLight(0xffffff, 0.85); key.position.set(4,7,4); scene.add(key);
+  const rim = new THREE.DirectionalLight(0x88bbff, 0.32); rim.position.set(-5,2,-4); scene.add(rim);
+
+  // ---- surface -----------------------------------------------------------
+  const pos = [], col = [], idx = [];
+  for (let i = 0; i < NT; i++){
+    for (let j = 0; j < NR; j++){
+      const e = Z[i][j];
+      pos.push(xOf(j), yOf(e), zOf(i));
+      const c = viridis((Math.min(e, ZTOP) - ZMIN) / (ZTOP - ZMIN));
+      col.push(c[0], c[1], c[2]);
+    }
+  }
+  for (let i = 0; i < NT-1; i++){
+    for (let j = 0; j < NR-1; j++){
+      const a = i*NR + j, b = a+1, c = a+NR, d = c+1;
+      idx.push(a,c,b, b,c,d);
+    }
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute("position", new THREE.Float32BufferAttribute(pos,3));
+  geo.setAttribute("color",    new THREE.Float32BufferAttribute(col,3));
+  geo.setIndex(idx); geo.computeVertexNormals();
+
+  const matSolid = new THREE.MeshLambertMaterial({
+    vertexColors:true, side:THREE.DoubleSide, flatShading:false });
+  const matWire = new THREE.MeshBasicMaterial({
+    vertexColors:true, wireframe:true, transparent:true, opacity:0.5 });
+  const surface = new THREE.Mesh(geo, matSolid);
+  scene.add(surface);
+
+  // ---- valley floor ------------------------------------------------------
+  const vpts = [];
+  for (let j = 0; j < NR; j++){
+    const i = TH.reduce((best,_,k) => Z[k][j] < Z[best][j] ? k : best, 0);
+    vpts.push(new THREE.Vector3(xOf(j), yOf(ESTAR[j]) + 0.012, zOf(i)));
+  }
+  const tube = new THREE.Mesh(
+    new THREE.TubeGeometry(new THREE.CatmullRomCurve3(vpts), 220, 0.019, 8, false),
+    new THREE.MeshBasicMaterial({color:0xe8a33d}));
+  scene.add(tube);
+
+  // ---- markers -----------------------------------------------------------
+  function ball(c, r){
+    return new THREE.Mesh(new THREE.SphereGeometry(r, 20, 16),
+      new THREE.MeshBasicMaterial({color:c}));
+  }
+  const walker = ball(0xffce7a, 0.055); scene.add(walker);
+  const rnd = ball(0xe8574a, 0.05); rnd.visible = false; scene.add(rnd);
+
+  // vertical guide line at R = 2.50
+  const gl2 = new THREE.BufferGeometry().setFromPoints(
+    [new THREE.Vector3(xOf(NR-1), yOf(ZMIN), zOf(0)),
+     new THREE.Vector3(xOf(NR-1), yOf(ZMIN), zOf(NT-1))]);
+  scene.add(new THREE.Line(gl2,
+    new THREE.LineDashedMaterial({color:0xe8574a, dashSize:0.07, gapSize:0.05})
+  ).computeLineDistances());
+
+  // ---- axis frame + sprite labels ---------------------------------------
+  const frameCol = 0x3a4a5c;
+  function seg(a,b){
+    scene.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([a,b]),
+      new THREE.LineBasicMaterial({color:frameCol, transparent:true, opacity:.65})));
+  }
+  const y0 = yOf(ZMIN);
+  seg(new THREE.Vector3(-SX/2,y0,-SZ/2), new THREE.Vector3(SX/2,y0,-SZ/2));
+  seg(new THREE.Vector3(-SX/2,y0,-SZ/2), new THREE.Vector3(-SX/2,y0,SZ/2));
+  seg(new THREE.Vector3(-SX/2,y0,-SZ/2), new THREE.Vector3(-SX/2,y0+SY,-SZ/2));
+
+  function label(text, v, size){
+    const c = document.createElement("canvas"), s = 256;
+    c.width = s; c.height = 64;
+    const g = c.getContext("2d");
+    g.fillStyle = "rgba(255,255,255,0.92)";
+    g.font = "700 34px ui-monospace,Menlo,Consolas,monospace";
+    g.textAlign = "center"; g.textBaseline = "middle";
+    g.fillText(text, s/2, 32);
+    const sp = new THREE.Sprite(new THREE.SpriteMaterial({
+      map:new THREE.CanvasTexture(c), transparent:true, depthTest:true}));
+    sp.position.copy(v); sp.scale.set(size*4, size, 1);
+    scene.add(sp);
+  }
+  label("R (Å)",   new THREE.Vector3(0, y0-0.22, -SZ/2-0.34), 0.105);
+  label("0.30",    new THREE.Vector3(-SX/2, y0-0.15, -SZ/2-0.17), 0.075);
+  label("2.50",    new THREE.Vector3( SX/2, y0-0.15, -SZ/2-0.17), 0.075);
+  label("θ (rad)", new THREE.Vector3(-SX/2-0.30, y0-0.17, 0), 0.105);
+  label("−π",      new THREE.Vector3(-SX/2-0.14, y0-0.10, -SZ/2), 0.07);
+  label("+π",      new THREE.Vector3(-SX/2-0.14, y0-0.10,  SZ/2), 0.07);
+  label("E (Ha)",  new THREE.Vector3(-SX/2-0.26, y0+SY*0.60, -SZ/2), 0.105);
+
+  // ---- hand-rolled orbit control ----------------------------------------
+  let az = -0.72, el = 0.52, dist = 6.0, drag = false, px = 0, py = 0;
+  const HOME = {az:-0.72, el:0.52, dist:6.0};
+  function place(){
+    camera.position.set(
+      dist*Math.cos(el)*Math.sin(az), dist*Math.sin(el), dist*Math.cos(el)*Math.cos(az));
+    camera.lookAt(0, 0.05, 0);
+  }
+  canvas.addEventListener("pointerdown", e => {
+    drag = true; px = e.clientX; py = e.clientY; canvas.setPointerCapture(e.pointerId);
+  });
+  canvas.addEventListener("pointerup",   e => { drag = false; });
+  canvas.addEventListener("pointermove", e => {
+    if (!drag) return;
+    az -= (e.clientX - px) * 0.0062;
+    el = Math.max(-0.15, Math.min(1.42, el + (e.clientY - py) * 0.0052));
+    px = e.clientX; py = e.clientY; place();
+  });
+  canvas.addEventListener("wheel", e => {
+    e.preventDefault();
+    userZoomed = true;
+    dist = Math.max(3.0, Math.min(16, dist + Math.sign(e.deltaY) * 0.42)); place();
+  }, {passive:false});
+
+  // ---- readout -----------------------------------------------------------
+  const fci = {}; D.scan.R.forEach((r,k) => fci[r.toFixed(2)] = D.scan.fci[k]);
+  const $ = id => document.getElementById(id);
+  function show(j, thetaIdx, isRandom){
+    const r = R[j], th = TH[thetaIdx], e = Z[thetaIdx][j];
+    $("rOut").textContent = r.toFixed(3) + " Å";
+    $("tOut").textContent = (th >= 0 ? "+" : "") + th.toFixed(4);
+    $("eOut").textContent = e.toFixed(6);
+    const ref = fci[r.toFixed(2)];
+    const v = $("verdict");
+    if (ref !== undefined){
+      const d = (e - ref) * 1000;
+      $("dOut").textContent = (d >= 0 ? "+" : "") + d.toFixed(3) + " mHa";
+      if (isRandom){
+        v.textContent = d > 1.6 ? "random start · misses by " + d.toFixed(1) + " mHa"
+                                : "random start · lucky hit";
+        v.className = "mono " + (d > 1.6 ? "bad" : "good");
+      } else {
+        v.textContent = "on the valley floor · " + d.toFixed(3) + " mHa from exact";
+        v.className = "mono good";
+      }
+    } else { $("dOut").textContent = "—"; }
+  }
+  function setWalker(j){
+    const i = TH.reduce((best,_,k) => Z[k][j] < Z[best][j] ? k : best, 0);
+    walker.position.set(xOf(j), yOf(ESTAR[j]) + 0.05, zOf(i));
+    rnd.visible = false;
+    $("slide").value = j;
+    show(j, i, false);
+  }
+
+  // ---- interactions ------------------------------------------------------
+  let anim = null;
+  $("slide").addEventListener("input", e => { stop(); setWalker(+e.target.value); });
+  function stop(){ if (anim){ cancelAnimationFrame(anim); anim = null; $("play").classList.remove("on"); $("play").textContent = "▶ Continuation"; } }
+
+  $("play").addEventListener("click", () => {
+    if (anim){ stop(); return; }
+    $("play").classList.add("on"); $("play").textContent = "■ Stop";
+    let j = 0, last = 0;
+    (function step(t){
+      if (t - last > 55){ setWalker(j); j++; last = t; }
+      if (j < NR){ anim = requestAnimationFrame(step); }
+      else { stop(); }
+    })(0);
+  });
+
+  $("rand").addEventListener("click", () => {
+    stop();
+    const j = NR - 1;
+    const i = Math.floor(Math.random() * NT);
+    rnd.visible = true;
+    rnd.position.set(xOf(j), yOf(Z[i][j]) + 0.05, zOf(i));
+    show(j, i, true);
+  });
+
+  let wire = false;
+  $("wire").addEventListener("click", e => {
+    wire = !wire; surface.material = wire ? matWire : matSolid;
+    e.currentTarget.classList.toggle("on", wire);
+  });
+  $("fold").addEventListener("click", e => {
+    const p = document.getElementById("panel");
+    const folded = p.classList.toggle("folded");
+    e.currentTarget.textContent = folded ? "+" : "–";
+    e.currentTarget.setAttribute("aria-label", folded ? "Expand panel" : "Collapse panel");
+  });
+  $("reset").addEventListener("click", () => {
+    userZoomed = false;
+    az = HOME.az; el = HOME.el; dist = fitDistance(camera.aspect); place();
+  });
+
+  // ---- run ---------------------------------------------------------------
+  // A portrait viewport needs the camera further back or the surface
+  // overflows the sides; recompute unless the viewer has zoomed manually.
+  let userZoomed = false;
+  function fitDistance(aspect){
+    return aspect >= 1.5 ? 6.0 : aspect >= 1.0 ? 6.8 : 8.4;
+  }
+  function resize(){
+    const w = innerWidth, h = innerHeight;
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h; camera.updateProjectionMatrix();
+    if (!userZoomed){ dist = fitDistance(camera.aspect); HOME.dist = dist; }
+    place();
+  }
+  addEventListener("resize", resize);
+  resize(); place(); setWalker(0);
+  (function loop(){ renderer.render(scene, camera); requestAnimationFrame(loop); })();
+})();
+</script>

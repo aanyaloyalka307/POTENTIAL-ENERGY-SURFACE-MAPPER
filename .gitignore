@@ -9,7 +9,12 @@ env/
 .DS_Store
 
 # generated data - regenerate with `make scan`
-data/
+# anchored to the top level so it does not also swallow web/src/data/
+/data/
 
 # keep the committed reference figures, ignore scratch output
 results/*.npz
+
+# per-machine run log written by export_results.py - accumulates locally
+results/run_history.xlsx
+results/run_history.csv

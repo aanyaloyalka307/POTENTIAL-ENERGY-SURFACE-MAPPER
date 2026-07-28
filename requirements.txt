@@ -7,3 +7,7 @@ matplotlib>=3.8
 # `make test` is a documented step, so the runner belongs in the one
 # environment `make setup` builds. Nothing above pulls it in transitively.
 pytest>=8.0
+
+# export_results.py appends each run's observables to an .xlsx workbook.
+# Pure Python, installs instantly; it falls back to CSV if this is absent.
+openpyxl>=3.1

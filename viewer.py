@@ -290,7 +290,10 @@ class Viewer:
         self.ax.set_xlim(xl)
         self.ax.set_ylim(yl)
         self.ax.set_zlim(zl)
-        self.fig.canvas.draw_idle()
+        # A camera-only change: no artist data changes, so draw_idle() does
+        # not repaint on the macOS backend and the button looks dead. Force
+        # a synchronous draw. (The animation path keeps draw_idle for speed.)
+        self.fig.canvas.draw()
 
     def on_scroll(self, event):
         """Scroll to zoom, by shrinking the axis limits about their centre."""
@@ -303,7 +306,9 @@ class Viewer:
             lo, hi = get()
             mid, half = (lo + hi) / 2, (hi - lo) / 2 * f
             set_(mid - half, mid + half)
-        self.fig.canvas.draw_idle()
+        # Zoom is also camera-only; force a real draw for the same reason as
+        # on_reset, or the surface will not visibly rescale on macOS.
+        self.fig.canvas.draw()
 
 
 def main():

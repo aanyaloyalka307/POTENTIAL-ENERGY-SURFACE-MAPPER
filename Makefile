@@ -1,4 +1,4 @@
-.PHONY: help setup verify test scan analyse compare landscape viewer all clean
+.PHONY: help setup verify test scan analyse compare landscape viewer web web-serve all clean
 
 PY ?= .venv/bin/python
 PIP ?= .venv/bin/pip
@@ -11,7 +11,9 @@ help:
 	@echo "make analyse  Phase 5 - extract observables and plot"
 	@echo "make compare  Phase 6 - ansatz comparison (~15 min)"
 	@echo "make landscape  the 3D E(R,theta) surface (~25 s)"
-	@echo "make viewer   open that surface interactively"
+	@echo "make viewer   open that surface interactively (matplotlib)"
+	@echo "make web      export data + build the React 3D web viewer"
+	@echo "make web-serve  serve the built web viewer at :8799"
 	@echo "make all      verify, test, scan, analyse"
 
 setup:
@@ -40,6 +42,14 @@ landscape:
 
 viewer:
 	$(PY) viewer.py
+
+web:
+	$(PY) export_web.py
+	cd web && npm install && npm run build
+	@echo "built web/dist/index.html - open it with: make web-serve"
+
+web-serve:
+	cd web/dist && python3 -m http.server 8799
 
 all: verify test scan analyse
 

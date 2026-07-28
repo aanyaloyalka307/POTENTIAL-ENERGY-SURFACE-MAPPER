@@ -22,7 +22,20 @@ It will:
      values are already known.
   4. Run the bond-length scan across 43 geometries.
   5. Extract the physics and draw the figure.
-  6. Open the figure for you.
+  6. Record this run's key numbers to a spreadsheet
+     (results/run_history.xlsx) so you never have to copy them by
+     hand - each run adds a new row.
+  7. Build and open the interactive 3D viewer in your web browser,
+     showing the surface computed from this run.
+
+The spreadsheet accumulates one row per run: the equilibrium bond
+length, well depth, harmonic frequency, largest VQE error, and the
+rest of the numbers this program prints. Close the browser tab and
+press Enter in the Terminal window when you are done to finish.
+
+Step 7 needs Node.js (https://nodejs.org/) the first time, to build
+the web viewer. If you would rather have the old desktop (matplotlib)
+window instead, run:  make viewer
 
 If macOS refuses to open the file, see TROUBLE below.
 
@@ -164,6 +177,30 @@ millihartree.
 
 Use the same .venv you set up for everything else - the viewer needs only
 numpy and matplotlib, both already installed.
+
+
+THE INTERACTIVE 3D VERSION, IN A BROWSER (React + WebGL)
+-------------------------------------------------------
+
+There is also a browser version - the same surface, orbit-able, with a
+bond-length scrubber, an animated "continuation" walk, and a "random
+start" button. It is built with React + react-three-fiber and animated
+with Motion.
+
+Easiest: double-click  Run_3D_Viewer.command
+
+The first run builds it (needs Node.js from https://nodejs.org/, about a
+minute). After that it opens in your browser in a couple of seconds.
+
+By hand, if you prefer:
+
+    python export_web.py            # bakes the surface into web/src/data/
+    cd web && npm install && npm run build
+    python3 -m http.server 8799 --directory dist
+    # then open http://localhost:8799
+
+The build is a single self-contained web page (the data is baked in), so
+it needs no Python or server once built. See web/README.md for details.
 
 
 WHERE TO READ MORE

@@ -70,7 +70,7 @@ echo ""
 
 # --- 4. the scan ---------------------------------------------------------
 echo "------------------------------------------------------------"
-echo " Step 2 of 3 - scanning 43 bond lengths (about 2 minutes)"
+echo " Step 2 of 4 - scanning 43 bond lengths (about 2 minutes)"
 echo "------------------------------------------------------------"
 echo "No output appears until it finishes. This is normal."
 "$VENV_PY" scan.py || {
@@ -81,9 +81,9 @@ echo "No output appears until it finishes. This is normal."
 }
 echo ""
 
-# --- 5. analysis and figure ---------------------------------------------
+# --- 5. analysis, figure and the results spreadsheet --------------------
 echo "------------------------------------------------------------"
-echo " Step 3 of 3 - extracting the physics"
+echo " Step 3 of 4 - extracting the physics"
 echo "------------------------------------------------------------"
 "$VENV_PY" analyse.py || {
     echo ""
@@ -92,17 +92,36 @@ echo "------------------------------------------------------------"
     exit 1
 }
 
+# Build the interactive surface grid the viewer needs (~25 s, first run
+# only - it is cached in data/landscape.npz afterwards).
+"$VENV_PY" landscape.py || {
+    echo ""
+    echo "ERROR: building the interactive surface failed."
+    read -p "Press Enter to close this window..."
+    exit 1
+}
+
+# Append this run's key numbers to results/run_history.xlsx so they are
+# saved instead of only scrolling past above.
+echo ""
+echo "Recording this run's values to the spreadsheet..."
+"$VENV_PY" export_results.py
+
 FIGURE="results/figures/dissociation_curve.png"
+HISTORY="results/run_history.xlsx"
+[ -f "$HISTORY" ] || HISTORY="results/run_history.csv"
 echo ""
 echo "============================================================"
-echo " Done. The figure is at:"
-echo "   $FIGURE"
+echo " Done. Figure:      $FIGURE"
+echo "       Run history: $HISTORY"
 echo "============================================================"
 
-# Open the figure if we are on macOS.
-if command -v open >/dev/null 2>&1 && [ -f "$FIGURE" ]; then
-    open "$FIGURE"
-fi
-
+# --- 6. open the interactive 3D web viewer ------------------------------
 echo ""
-read -p "Press Enter to close this window..."
+echo "------------------------------------------------------------"
+echo " Step 4 of 4 - opening the interactive 3D viewer in your browser"
+echo "------------------------------------------------------------"
+# Hand off to the shared launcher: it re-bakes the surface from the results
+# just computed, rebuilds the web page, serves it, and opens your browser.
+# (The desktop matplotlib viewer is still available via: make viewer)
+exec bash open_web_viewer.sh --rebuild
